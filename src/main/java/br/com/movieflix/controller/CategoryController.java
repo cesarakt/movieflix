@@ -1,6 +1,9 @@
 package br.com.movieflix.controller;
 
+import br.com.movieflix.controller.request.CategoryRequest;
+import br.com.movieflix.controller.response.CategoryResponse;
 import br.com.movieflix.entity.Category;
+import br.com.movieflix.mapper.CategoryMapper;
 import br.com.movieflix.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -16,17 +19,20 @@ public class CategoryController {
     private final CategoryService categoryService; //Injeção de dependência via @RequiredArgsConstructor
 
     @GetMapping()
-    public List<Category> getAllCategories () {
-        return categoryService.findAll();
+    public List<CategoryResponse> getAllCategories () {
+        List<Category> categoryList = categoryService.findAll();
+        return categoryList.stream()
+                .map(CategoryMapper::toCategoryResponse)
+                .toList();
     }
 
     @PostMapping()
-    public Category saveCategory (@RequestBody Category category) {
+    public CategoryResponse saveCategory (@RequestBody CategoryRequest category) {
         return categoryService.saveCategory(category);
     }
 
     @GetMapping("/{id}")
-    public Category getByCategoryId (@PathVariable Long id) {
+    public CategoryResponse getByCategoryId (@PathVariable Long id) {
         Optional<Category> optionalCategory = categoryService.findById(id);
         return optionalCategory.orElse(null);
     }
