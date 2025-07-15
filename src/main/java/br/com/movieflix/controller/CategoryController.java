@@ -27,14 +27,19 @@ public class CategoryController {
     }
 
     @PostMapping()
-    public CategoryResponse saveCategory (@RequestBody CategoryRequest category) {
-        return categoryService.saveCategory(category);
+    public CategoryResponse saveCategory (@RequestBody CategoryRequest categoryRequest) {
+        Category newCategory = CategoryMapper.toCategory(categoryRequest);
+        Category savedCategory = categoryService.saveCategory(newCategory);
+        return CategoryMapper.toCategoryResponse(savedCategory);
     }
 
     @GetMapping("/{id}")
     public CategoryResponse getByCategoryId (@PathVariable Long id) {
         Optional<Category> optionalCategory = categoryService.findById(id);
-        return optionalCategory.orElse(null);
+        if (optionalCategory.isPresent()) {
+            return CategoryMapper.toCategoryResponse(optionalCategory.get());
+        }
+        return null;
     }
 
     @DeleteMapping("/{id}")
