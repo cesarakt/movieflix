@@ -50,6 +50,31 @@ public class MovieService {
         return repository.findById(id);
     }
 
+    public Optional<Movie> update (Long id, Movie movieUpdate) {
+        Optional<Movie> movieById = repository.findById(id);
+        if (movieById.isPresent()) {
+            List<Category> categories = this.findCategories(movieUpdate.getCategories());
+            List<Streaming> streamings = this.findStreamings(movieUpdate.getStreamings());
+
+            Movie movie = movieById.get();
+            movie.setTitle(movieUpdate.getTitle());
+            movie.setDescription(movieUpdate.getDescription());
+            movie.setRating(movieUpdate.getRating());
+            movie.setReleaseDate(movieUpdate.getReleaseDate());
+
+            movie.getCategories().clear();
+            movie.getCategories().addAll(categories);
+
+            movie.getStreamings().clear();
+            movie.getStreamings().addAll(streamings);
+
+            repository.save(movie);
+            return Optional.of(movie);
+        }
+
+        return Optional.empty();
+    }
+
     public void deleteById (Long id) {
         repository.deleteById(id);
     }
