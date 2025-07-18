@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @RequestMapping("/movieflix/movie")
@@ -28,10 +29,18 @@ public class MovieController {
         return ResponseEntity.ok(movieResponses);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<MovieResponse> findById(@PathVariable Long id) {
+        return movieService.findById(id)
+                .map(movie -> ResponseEntity.ok(MovieMapper.toMovieResponse(movie)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @PostMapping
     public ResponseEntity<MovieResponse> save(@RequestBody MovieRequest movieRequest) {
         Movie savedMovie = movieService.save(MovieMapper.toMovie(movieRequest));
         MovieResponse movieResponse = MovieMapper.toMovieResponse(savedMovie);
         return ResponseEntity.status(HttpStatus.CREATED).body(movieResponse);
     }
+
 }
