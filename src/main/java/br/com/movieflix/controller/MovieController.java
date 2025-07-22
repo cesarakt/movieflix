@@ -20,6 +20,13 @@ public class MovieController {
 
     private final MovieService movieService;
 
+    @PostMapping
+    public ResponseEntity<MovieResponse> save(@RequestBody MovieRequest movieRequest) {
+        Movie savedMovie = movieService.save(MovieMapper.toMovie(movieRequest));
+        MovieResponse movieResponse = MovieMapper.toMovieResponse(savedMovie);
+        return ResponseEntity.status(HttpStatus.CREATED).body(movieResponse);
+    }
+
     @GetMapping
     public ResponseEntity<List<MovieResponse>> findAll() {
         List<MovieResponse> movieResponses = movieService.findAll()
@@ -36,19 +43,30 @@ public class MovieController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
-    public ResponseEntity<MovieResponse> save(@RequestBody MovieRequest movieRequest) {
-        Movie savedMovie = movieService.save(MovieMapper.toMovie(movieRequest));
-        MovieResponse movieResponse = MovieMapper.toMovieResponse(savedMovie);
-        return ResponseEntity.status(HttpStatus.CREATED).body(movieResponse);
-    }
-
     @PutMapping("/{id}")
     public ResponseEntity<MovieResponse> update(@PathVariable Long id, @RequestBody MovieRequest movieRequest) {
         Movie movie = MovieMapper.toMovie(movieRequest);
         return movieService.update(id, movie)
                 .map(m -> ResponseEntity.ok(MovieMapper.toMovieResponse(m)))
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<MovieResponse>> findByCategoryId(@RequestParam Long category) {
+        List<Movie> moviesByCategory = movieService.findByCategory(category);
+        List<MovieResponse> movieResponse = moviesByCategory.stream().map(movie -> MovieMapper.toMovieResponse(movie)).toList();
+        return ResponseEntity.ok(movieResponse);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+        Optional<Movie> optMovieById = movieService.findById(id);
+        if (optMovieById.isPresent()) {
+            movieService.deleteById(id);
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.notFound().build();
     }
 
 }
